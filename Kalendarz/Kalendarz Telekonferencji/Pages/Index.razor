@@ -1,0 +1,430 @@
+﻿@page "/"
+
+@using Microsoft.AspNetCore.Authentication;
+@using Microsoft.AspNetCore.Identity
+
+@using Kalendarz_Telekonferencji.Models
+@using Kalendarz_Telekonferencji.Data
+@using Kalendarz_Telekonferencji.Data.Interfaces
+
+@inject SignInManager<IdentityUser> signInManager
+@inject UserManager<IdentityUser> userManager
+@inject RoleManager<IdentityRole> roleManager
+
+@inject NavigationManager navigationManager
+@inject IJSRuntime JsRuntime;
+@inject ICalendarServices calendarServices
+
+<div class="row calendar col-12">
+
+
+    <div class="sticky">
+
+        <div class="col-12"><br /></div>
+
+        <div class="col-12 head">
+            <div id="month" class="col-3">
+                <label>@date.GetMonthToPolishWord() @date.Year r.</label>
+            </div>
+            <div id="btn" class="col-5">
+                <button class="btn" @onclick="GoDayAsync">Dzień</button>
+                <button class="btn" @onclick="GoWeekAsync">Tydzień</button>
+                <button class="btn clicked" @onclick="GoMonth" disabled>Miesiąc</button>
+            </div>
+            <div id="nextBack" class="col-3">
+                <button class="btn" @onclick="MovePreviousMonthAsync">Do tyłu</button>
+                <button class="btn" @onclick="MoveNextMonthAsync">Do przodu</button>
+            </div>
+        </div>
+
+        <div class="col-12 inlineBlock fontDay">
+            <label class="fontDay">Wybrany dzień:</label>
+            <input id="string" class="fontDay" type="text" disabled readonly @bind="@sDayFromCalendarClick" @oninput="@((e) => { sDayFromCalendarClick=(string)e.Value; })" />
+        </div>
+
+        <div class="col-12"><br /></div>
+
+        <div class="col-12 calendarHead">
+            <div id="one" class="day">
+                PONIEDZIAŁEK
+            </div>
+            <div id="two" class="day">
+                WTOREK
+            </div>
+            <div id="three" class="day">
+                ŚRODA
+            </div>
+            <div id="four" class="day">
+                CZWARTEK
+            </div>
+            <div id="five" class="day">
+                PIĄTEK
+            </div>
+            <div id="six" class="day">
+                SOBOTA
+            </div>
+            <div id="seven" class="day">
+                NIEDZIELA
+            </div>
+        </div>
+    </div>
+
+
+    <div class="calendarBackground col-12">
+        @for (int i = 0; i < 42; i++)
+        {
+
+
+            @if (date.GetDayOfWeekToInt() <= (i + 1) && date.iDayCounter < date.DaysInMonth)
+            {
+                var index = i;
+                date.iDayCounter++;
+                day[index] = date.iDayCounter;
+                <div class="@(date.iDayCounter.ToString()==sDayFromCalendarClick ? @classField[i]="calendarFieldActive calendarField" : @classField[i]="calendarField")"
+                     @onclick="(() => SelectField(index))" @ondblclick="GoDayAsync">
+
+                    <div class="col-12 centerDay">
+                        <div class="col-12"><br /></div>
+
+                        <div id="day+@index" class="col-xl-6 col-lg-10 col-12 days inlineBlock">
+                            @day[index]
+                        </div>
+
+                        <div class="col-12"><br /></div>
+                    </div>
+                    @foreach (var item in calendarList)
+                    {
+                        if (date.iDayCounter.ToString() == item.Day && date.Month == item.Month && date.Year == item.Year)
+                        {
+                            if (item.TypeOfConference == "SW")
+                            {
+                                <div class="col-12 centerDay colorSW" @onclick="@(()=>ShowEventAsync(item.Id))">
+                                    @item.TimeStart - @item.TimeEnd @item.TypeOfConference
+                                </div>
+                            }
+                            if (item.TypeOfConference == "Sąd")
+                            {
+                                <div class="col-12 centerDay colorSad" @onclick="@(()=>ShowEventAsync(item.Id))">
+                                    @item.TimeStart - @item.TimeEnd @item.TypeOfConference
+                                </div>
+                            }
+                            if (item.TypeOfConference == "Inna")
+                            {
+                                <div class="col-12 centerDay colorOther" @onclick="@(()=>ShowEventAsync(item.Id))">
+                                    @item.TimeStart - @item.TimeEnd @item.TypeOfConference
+                                </div>
+                            }
+                        }
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="calendarFieldX">
+
+                </div>
+            }
+        }
+        @if (date.iDayCounter > 0) date.iDayCounter = 0;
+    </div>
+
+</div>
+
+
+@if (bShowEvent)
+{
+    <!-- This is the popup to create or edit -->
+    <div class="modal" tabindex="-1" style="display:block" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modalBackgroundColor">
+                    <h3 class="modal-title fontDayHeader colorFont centerDay">
+                        Wydarzenie: @calendar.Day @SetMonthToPolishWord(calendar.Month) @calendar.Year r.<br />
+                        @GetDayOfWeekInPolish(new DateTime(Convert.ToInt32(calendar.Year), calendar.Month, Convert.ToInt32(calendar.Day), 1, 1, 1).Date.DayOfWeek.ToString())
+                    </h3>
+
+                </div>
+                <!-- Edit form to show -->
+                <div class="modal-body">
+                    <div class="col-12">
+                        <div class="col-12 inlineBlock fontDay">
+                            <label class="fontDay">Planowana godzina rozpoczęcia:</label>
+                            <input class="fontDay centerDay" type="text" disabled readonly @bind-value="calendar.TimeStart" />
+                        </div>
+                        <div class="col-12 inlineBlock fontDay">
+                            <label class="fontDay">Planowana godzina zakończenia:</label>
+                            <input class="fontDay centerDay" type="text" disabled readonly @bind-value="calendar.TimeEnd" />
+                        </div>
+                        <div class="col-12 inlineBlock fontDay">
+                            <label>Rodzaj wideokonferencji:</label>
+                            <input class="fontDay centerDay" type="text" disabled readonly @bind-value="calendar.TypeOfConference" />
+                        </div>
+                        <div class="col-12 inlineBlock fontDay">
+                            <label class="col-12 leftSide">Kogo dotyczy:</label>
+                            <input class="col-12 fontDay centerDay" type="text" disabled readonly @bind-value="calendar.WhoIsConcern" />
+                        </div>
+                        <div class="col-12 leftSide fontDay">
+                            <label>Dodatkowe informacje:</label>
+                        </div>
+
+                        <div class="col-12 fontDay">
+                            <textarea class="col-12 textDay borderDay fontDay" readonly disabled>@calendar.OtherInformation</textarea>
+                        </div>
+
+                        @if (calendar.Url != "")
+                        {
+                            <div class="col-12"><br /></div>
+                            <div class="col-12">
+                                <a class="fontDayLink centerDay" href="@calendar.Url" target="_blank">Zeskanowany dokument</a>
+                            </div>
+                        }
+                    </div>
+
+                    <br />
+                    <!-- Button to back -->
+                    <button class="btn2 btn-primary" @onclick="CloseEvent">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@code
+{
+
+    List<CalendarViewModel> calendarList = new List<CalendarViewModel>();
+    CalendarViewModel calendar = new CalendarViewModel();
+    int iIdOfCalendarEvent = -1;
+    Date date = new Date(DateTime.Today);
+    string sDayFromCalendarClick { set; get; } = "";
+    string[] classField = new string[42];
+    int oldIndex = -1;
+    int[] day = new int[42];
+
+    void SetClassField()
+    {
+        for (int i = 0; i < 42; i++)
+        {
+            classField[i] = "calendarField";
+        }
+    }
+
+    void SelectField(int index)
+    {
+
+        if (classField[index] == "calendarField")
+        {
+            classField[index] = "calendarFieldActive calendarField";
+        }
+        else
+        {
+            classField[index] = "calendarField";
+        }
+
+        if (oldIndex != -1)
+        {
+            classField[oldIndex] = "calendarField";
+        }
+        oldIndex = index;
+        sDayFromCalendarClick = day[index].ToString();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CreateAdminAccount();
+        SetClassField();
+        //date = new Date(DateTime.Today);
+        //załadowanie wszystkich eventów do listy view modeli calendarList
+        sDayFromCalendarClick = DateTime.Today.Day.ToString();
+        calendarList = await calendarServices.GetCalendarsByMonthAsync(new DateTime(Convert.ToInt32(date.Year), date.Month, Convert.ToInt32(sDayFromCalendarClick), 0, 0, 0));//.GetAllCalendarsAsync();//.OrderBy(x => x.Year).ThenBy(x => x.Month).ThenBy(x => x.Day).ThenBy(x => x.TimeStart).ToList();
+    }
+
+    void GoMonth()
+    {
+        navigationManager.NavigateTo("/", true);
+    }
+
+    async Task GoWeekAsync()
+    {
+
+        if (sDayFromCalendarClick != "")
+        {
+            DateTime selectedDate = new DateTime(Convert.ToInt32(date.Year), date.Month, Convert.ToInt32(sDayFromCalendarClick), 0, 0, 0);
+            //navigationManager.NavigateTo("/week/"+selectetDate.Date.ToShortDateString(), true);
+            navigationManager.NavigateTo($"/week/{selectedDate.Date.ToShortDateString()}");
+        }
+        else
+        {
+            await JsRuntime.InvokeVoidAsync("Alert");
+        }
+    }
+
+    async Task GoDayAsync()
+    {
+        if (sDayFromCalendarClick != "")
+        {
+            DateTime selectedDate = new DateTime(Convert.ToInt32(date.Year), date.Month, Convert.ToInt32(sDayFromCalendarClick), 0, 0, 0);
+            navigationManager.NavigateTo($"/day/{selectedDate.Date.ToShortDateString()}");
+        }
+        else
+        {
+            await JsRuntime.InvokeVoidAsync("Alert");
+        }
+    }
+
+
+    bool bShowEvent = false;
+    async Task ShowEventAsync(int IdOfCalendarEvent)
+    {
+        iIdOfCalendarEvent = IdOfCalendarEvent;
+        calendar = await calendarServices.GetCalendarByIdAsync(iIdOfCalendarEvent);
+        bShowEvent = true;
+    }
+
+    void CloseEvent()
+    {
+        bShowEvent = false;
+        //navigationManager.NavigateTo("/", true);
+    }
+
+    async Task MovePreviousMonthAsync()
+    {
+        sDayFromCalendarClick = date.GetPreviousMonth();
+        if (oldIndex != -1)
+        {
+            classField[oldIndex] = "calendarField";
+        }
+        calendarList = await calendarServices.GetCalendarsByMonthAsync(new DateTime(Convert.ToInt32(date.Year), date.Month, 1, 0, 0, 0));//.GetAllCalendarsAsync();//.OrderBy(x => x.Year).ThenBy(x => x.Month).ThenBy(x => x.Day).ThenBy(x => x.TimeStart).ToList();
+
+    }
+    async Task MoveNextMonthAsync()
+    {
+        sDayFromCalendarClick = date.GetNextMonth();
+        if (oldIndex != -1)
+        {
+            classField[oldIndex] = "calendarField";
+        }
+        calendarList = await calendarServices.GetCalendarsByMonthAsync(new DateTime(Convert.ToInt32(date.Year), date.Month, 1, 0, 0, 0));//.GetAllCalendarsAsync();//.OrderBy(x => x.Year).ThenBy(x => x.Month).ThenBy(x => x.Day).ThenBy(x => x.TimeStart).ToList();
+
+    }
+
+    string GetDayOfWeekInPolish(string DayOfWeek)
+    {
+        string DayOfWeekPolish = "";
+        switch (DayOfWeek)
+        {
+            case "Monday":
+                DayOfWeekPolish = "Poniedziałek";
+                break;
+            case "Tuesday":
+                DayOfWeekPolish = "Wtorek";
+                break;
+            case "Wednesday":
+                DayOfWeekPolish = "Środa";
+                break;
+            case "Thursday":
+                DayOfWeekPolish = "Czwartek";
+                break;
+            case "Friday":
+                DayOfWeekPolish = "Piątek";
+                break;
+            case "Saturday":
+                DayOfWeekPolish = "Sobota";
+                break;
+            case "Sunday":
+                DayOfWeekPolish = "Niedziela";
+                break;
+        }
+        return DayOfWeekPolish;
+    }
+
+    string SetMonthToPolishWord(int month)
+    {
+        string Month = "";
+        switch (month)
+        {
+            case 1:
+                Month = "STYCZEŃ";
+                break;
+            case 2:
+                Month = "LUTY";
+                break;
+            case 3:
+                Month = "MARZEC";
+                break;
+            case 4:
+                Month = "KWIECIEŃ";
+                break;
+            case 5:
+                Month = "MAJ";
+                break;
+            case 6:
+                Month = "CZERWIEC";
+                break;
+            case 7:
+                Month = "LIPIEC";
+                break;
+            case 8:
+                Month = "SIERPIEŃ";
+                break;
+            case 9:
+                Month = "WRZESIEŃ";
+                break;
+            case 10:
+                Month = "PAŹDZIERNIK";
+                break;
+            case 11:
+                Month = "LISTOPAD";
+                break;
+            case 12:
+                Month = "GRUDZIEŃ";
+                break;
+        }
+        return Month;
+    }
+
+    private IList<AuthenticationScheme> ExternalLogins { get; set; }
+
+    private async Task CreateAdminAccount()
+    {
+        ExternalLogins = (await signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
+
+
+        //if (userManager.FindByNameAsync("Admin").IsCompletedSuccessfully == false)
+        //{
+        var user = new IdentityUser { UserName = "Admin" };
+        var result = await userManager.CreateAsync(user, "789Ka;oz");
+        if (result.Succeeded)
+        {
+            var RoleResult = await roleManager.FindByNameAsync("ADMIN");
+            if (RoleResult == null)
+            {
+                // Create
+                await roleManager.CreateAsync(new IdentityRole("ADMIN"));
+            }
+            await userManager.AddToRoleAsync(user, "ADMIN");
+        }
+
+        // }
+
+    }
+
+}

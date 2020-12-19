@@ -1,0 +1,114 @@
+﻿@page "/"
+@namespace Kalendarz_Telekonferencji.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kalendarz Telekonferencji</title>
+    <base href="~/" />
+    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link href="css/site.css" rel="stylesheet" />
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Texturina:wght@100&display=swap" rel="stylesheet">
+
+    <script src="_content/BlazorInputFile/inputfile.js"></script>
+
+    <script type="text/javascript">
+        function Alert() {
+            alert('Nie został wybrany żaden dzień!!!');
+        }
+    </script>
+
+
+    <script type="text/JavaScript">
+        function reportWindowSize() {
+            var w = window.outerWidth;
+            if (w < 1150) location.replace("/notsupported");
+        }
+        window.onresize = reportWindowSize;
+    </script>
+
+    <script type="text/javascript">
+        function setDay(index) {
+            var str = "";
+            var selectedRow = document.doc.getElementsByClass("calendarFieldActive").first();
+            str = selectedRow.textContent;
+            console.log(str.replace(/ /g, ''));
+            var myElement = document.getElementById('string');
+            myElement.value = str.replace(/ /g, '');
+            var event = new Event('change');
+            myElement.dispatchEvent(event);
+        }
+    </script>
+
+    <script type="text/javascript">
+
+        var selectedClass = 'calendarFieldActive';
+        var selectedRow = null;
+        var str = "";
+        function selectRow(row) {
+            clearSelection();
+            row.className += " " + selectedClass;
+            selectedRow = row;
+            str = selectedRow.textContent;
+            console.log(str.replace(/ /g, ''));
+            //return str;
+        }
+
+        var STR = {
+            func1: function () {
+                return str;
+            }
+        }
+        function clearSelection() {
+            var reg = new RegExp('(\\s|^)' + selectedClass + '(\\s|$)');
+            if (selectedRow != null) selectedRow.className = selectedRow.className.replace(reg, ' ');
+        }
+
+    </script>
+
+    <script type="text/javascript">
+
+        var selectedClass = 'calendarFieldActive2';
+        var selectedRow = null;
+        function selectRow2(row) {
+            clearSelection();
+            row.className += " " + selectedClass;
+            selectedRow = row;
+        }
+        function clearSelection() {
+            var reg = new RegExp('(\\s|^)' + selectedClass + '(\\s|$)');
+            if (selectedRow != null) selectedRow.className = selectedRow.className.replace(reg, ' ');
+        }
+
+    </script>
+
+</head>
+<body>
+    <app>
+        <component type="typeof(App)" render-mode="ServerPrerendered" />
+    </app>
+
+    <div id="blazor-error-ui">
+        <environment include="Staging,Production">
+            An error has occurred. This application may no longer respond until reloaded.
+        </environment>
+        <environment include="Development">
+            An unhandled exception has occurred. See browser dev tools for details.
+        </environment>
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.server.js">onresize</script>
+    
+   
+</body>
+</html>

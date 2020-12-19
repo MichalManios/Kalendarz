@@ -1,0 +1,12 @@
+﻿
+<AuthorizeView>
+    <Authorized>
+        <a href="Identity/Account/Manage/ChangePassword">Witaj, @context.User.Identity.Name!</a>
+        <form method="post" action="Identity/Account/LogOut">
+            <button type="submit" class="btnLogout">Wyloguj</button>
+        </form>
+    </Authorized>
+    <NotAuthorized>
+        <a href="Identity/Account/Login">Zaloguj</a>
+    </NotAuthorized>
+</AuthorizeView>

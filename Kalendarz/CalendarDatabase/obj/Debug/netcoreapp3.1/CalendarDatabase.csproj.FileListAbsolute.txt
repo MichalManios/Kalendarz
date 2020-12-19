@@ -1,0 +1,12 @@
+C:\PROJEKTY\KALENDARZ\Kalendarz Telekonferencji\CalendarDatabase\bin\Debug\netcoreapp3.1\CalendarDatabase.deps.json
+C:\PROJEKTY\KALENDARZ\Kalendarz Telekonferencji\CalendarDatabase\bin\Debug\netcoreapp3.1\CalendarDatabase.dll
+C:\PROJEKTY\KALENDARZ\Kalendarz Telekonferencji\CalendarDatabase\obj\Debug\netcoreapp3.1\CalendarDatabase.csprojAssemblyReference.cache
+C:\PROJEKTY\KALENDARZ\Kalendarz Telekonferencji\CalendarDatabase\obj\Debug\netcoreapp3.1\CalendarDatabase.AssemblyInfoInputs.cache
+C:\PROJEKTY\KALENDARZ\Kalendarz Telekonferencji\CalendarDatabase\obj\Debug\netcoreapp3.1\CalendarDatabase.AssemblyInfo.cs
+C:\PROJEKTY\KALENDARZ\Kalendarz Telekonferencji\CalendarDatabase\bin\Debug\netcoreapp3.1\CalendarDatabase.runtimeconfig.json
+C:\PROJEKTY\KALENDARZ\Kalendarz Telekonferencji\CalendarDatabase\bin\Debug\netcoreapp3.1\CalendarDatabase.runtimeconfig.dev.json
+C:\PROJEKTY\KALENDARZ\Kalendarz Telekonferencji\CalendarDatabase\obj\Debug\netcoreapp3.1\CalendarDatabase.genruntimeconfig.cache
+C:\PROJEKTY\KALENDARZ\Kalendarz Telekonferencji\CalendarDatabase\bin\Debug\netcoreapp3.1\CalendarDatabase.pdb
+C:\PROJEKTY\KALENDARZ\Kalendarz Telekonferencji\CalendarDatabase\obj\Debug\netcoreapp3.1\CalendarDatabase.csproj.CoreCompileInputs.cache
+C:\PROJEKTY\KALENDARZ\Kalendarz Telekonferencji\CalendarDatabase\obj\Debug\netcoreapp3.1\CalendarDatabase.dll
+C:\PROJEKTY\KALENDARZ\Kalendarz Telekonferencji\CalendarDatabase\obj\Debug\netcoreapp3.1\CalendarDatabase.pdb

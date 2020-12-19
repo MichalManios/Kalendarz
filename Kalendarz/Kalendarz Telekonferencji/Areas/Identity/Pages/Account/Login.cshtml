@@ -1,0 +1,85 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Areszt Śledczy w Łodzi";
+}
+
+<div class="col-12"><br /></div>
+<div class="col-12"><br /></div>
+<div class="col-12"><br /></div>
+<div class="col-12"><br /></div>
+<div class="col-12"><br /></div>
+
+<div class="col-12 header">
+    <img class="img1" src="/Photos/godlo.png" asp-append-version="true" />
+    <h1>@ViewData["Title"]</h1>
+</div>
+
+<div class="col-12"><br /></div>
+
+<hr class="p-0 m-0 line1" />
+<hr class="p-0 m-0 line2" />
+
+<div class="col-12"><br /></div>
+<div class="col-12"><br /></div>
+<div class="col-12"><br /></div>
+<div class="col-12"><br /></div>
+
+<div class="row">
+    <div class="col-md-4">
+        <section>
+            <form id="account" method="post">
+
+                <div class="section-input">
+
+                    <div class="form-group">
+                        <input asp-for="Input.UserName" type="text" required autocomplete="off" />
+
+                        <label for="name" class="label-name">
+                            <span class="content-name">Login</span>
+                        </label>
+                    </div>
+                    <span asp-validation-for="Input.UserName" class="text-danger"></span>
+                </div>
+
+                <div class="col-12"><br /></div>
+                <div class="col-12"><br /></div>
+
+                <div class="section-input1">
+
+                    <div class="form-group1">
+                        <input asp-for="Input.Password" type="password" required autocomplete="off" />
+
+                        <label for="name1" class="label-name1">
+                            <span class="content-name1">Hasło</span>
+                        </label>
+                    </div>
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+
+                <div class="col-12"><br /></div>
+                <div class="col-12"><br /></div>
+                <div class="col-12"><br /></div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary col-12">ZALOGUJ</button>
+                </div>
+            </form>
+        </section>
+    </div>
+    <div class="col-md-6 col-md-offset-2">
+
+        <section>
+            <div class="col-12 offset-5">
+                <img class="img" src="/Photos/SW_symbol.svg" asp-append-version="true" />
+            </div>
+        </section>
+
+        
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,571 @@
+﻿@page "/day/{selectedDate}"
+
+@using Kalendarz_Telekonferencji.Data.Interfaces
+@using BlazorInputFile
+@inject NavigationManager navigationManager
+@inject IFileUpload fileUpload
+@using Kalendarz_Telekonferencji.Models
+@using Kalendarz_Telekonferencji.Data
+@inject ICalendarServices calendarServices
+
+<div class="row calendar col-12">
+    <div class="sticky">
+
+        <div class="col-12"><br /></div>
+
+        <div class="col-12 head">
+            <div id="month" class="col-3">
+                <label>@date.GetMonthToPolishWord() @date.Year r.</label>
+            </div>
+            <div id="btn" class="col-5">
+                <button class="btn clicked" @onclick="GoDay" disabled>Dzień</button>
+                <button class="btn" @onclick="GoWeek">Tydzień</button>
+                <button class="btn" @onclick="GoMonth">Miesiąc</button>
+            </div>
+            <div id="nextBack" class="col-3">
+                <button class="btn" @onclick="PreviousDayAsync">Do tyłu</button>
+                <button class="btn" @onclick="NextDayAsync">Do przodu</button>
+            </div>
+        </div>
+
+        <div class="col-12"><br /></div>
+        <div class="col-12"><br /></div>
+        <div class="col-12"><hr class="line col-12" /></div>
+    </div>
+
+
+    <div class="col-12 dayPageWorking">
+
+        <div class="col-12 titleDay">
+            <div class="col-12 centerDay">
+                <div class="centerDay borderDayWhite fontDayHeader">
+                    <label>WYBRANY DZIEŃ:</label>
+
+                    <label>@date.Day @date.GetMonthToPolishWord() @date.Year r.</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12"><br /></div>
+
+
+
+        <AuthorizeView Roles="ADMIN">
+            <Authorized>
+                <div class="col-4 rightDay m-0 p-0">
+                    <div class="col-12"><br /></div>
+                    <div class="col-12 leftSide">
+                        <label class="fontDay">Planowana godzina rozpoczęcia:</label>
+                        <input class="fontDay" type="time" @bind="StartTime" />
+                        @if (!CheckStartTime() && StartChecking)
+                        {
+                            <p class="alert-danger">@MessageStartTime</p>
+                        }
+                    </div>
+                    <div class="col-12 leftSide">
+                        <label class="fontDay">Planowana godzina zakończenia:</label>
+                        <input class="fontDay" type="time" @bind="EndTime" />
+                        @if (!CheckEndTime() && StartChecking)
+                        {
+                            <p class="alert-danger">@MessageEndTime</p>
+                        }
+                    </div>
+                    @if (!CheckCorectTime() && StartChecking)
+                    {
+                        <p class="alert-danger">@MessageCorectTime</p>
+                    }
+
+                    <div class="col-12"><br /></div>
+                    <div class="col-12 fontDay inlineBlock leftSide">
+                        <label class="col-12">Rodzaj wideokonferencji:</label>
+                        <div class="col-12 fontDay inlineBlock rightSide">
+                            @if (TypeOfConference == "SW")
+                            {
+                                <input type="radio" id="SW" name="TypeOfConference" value="SW" checked @onchange="ConferenceTypeSelection" />
+                            }
+                            else
+                            {
+                                <input type="radio" id="SW" name="TypeOfConference" value="SW" @onchange="ConferenceTypeSelection" />
+                            }
+                            <label for="SW">SW</label>
+                            <div class="boxSW"></div>
+                        </div>
+                        <div class="col-12 fontDay inlineBlock rightSide">
+                            @if (TypeOfConference == "Sąd")
+                            {
+                                <input type="radio" id="Sad" name="TypeOfConference" value="Sąd" checked @onchange="ConferenceTypeSelection" />
+                            }
+                            else
+                            {
+                                <input type="radio" id="Sad" name="TypeOfConference" value="Sąd" @onchange="ConferenceTypeSelection" />
+                            }
+                            <label for="Sad">Sąd</label>
+                            <div class="boxSad"></div>
+                        </div>
+                        <div class="col-12 fontDay inlineBlock rightSide">
+                            @if (TypeOfConference == "Inna")
+                            {
+                                <input type="radio" id="Other" name="TypeOfConference" value="Inna" checked @onchange="ConferenceTypeSelection" />
+                            }
+                            else
+                            {
+                                <input type="radio" id="Other" name="TypeOfConference" value="Inna" @onchange="ConferenceTypeSelection" />
+                            }
+                            <label for="Other">Inna</label>
+                            <div class="boxOther"></div>
+                        </div>
+                        @if (!CheckTypeOfConference() && StartChecking)
+                        {
+                            <p class="alert-danger">@MessageTypeOfConference</p>
+                        }
+                    </div>
+
+                    <div class="col-12 inlineBlock fontDay">
+                        <label class="col-4 leftSide">Kogo dotyczy:</label>
+                        <input class="col-7 fontDay" type="text" @bind="WhoIsConcern" />
+                        @if (!CheckWhoIsConcern() && StartChecking)
+                        {
+                            <p class="alert-danger">@MessageWhoIsConcern</p>
+                        }
+                    </div>
+
+                    <div class="col-12"><br /></div>
+                    <div class="col-12 leftSide fontDay">
+                        <label>Dodatkowe informacje:</label>
+                    </div>
+
+                    <div class="col-12 fontDay">
+                        <textarea class="col-12 textDay borderDay fontDay" @bind="OtherInformation"></textarea>
+                    </div>
+
+                    <div class="col-12" style="text-align:left;">
+                        <InputFile OnChange="@fileUpload.ChoiceFileToUpload"></InputFile>
+                    </div>
+                    <div class="col-12 centerDay" style="text-align:left;">
+                        <button type="submit" class="btn inlineBlock" @onclick="UploadAsync">Zamieść wybrany plik na serwerze</button>
+                        @if (fileUpload.IsAnyFileWaitToUpload())
+                        {
+                            <p class="fontDay inlineBlock">Plik czeka na upload.</p>
+                        }
+                        <p class="fontDay inlineBlock">@sMessage</p>
+                    </div>
+
+                    @if (!bEditCalendar)
+                    {
+                        <div class="col-12"><br /></div>
+                        <div class="inlineBlock">
+                            <button class="btn2" @onclick="SaveConferenceAsync">Zapisz wideokonferencję</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-12"><br /></div>
+                        <div class="inlineBlock">
+                            <button class="btn2" @onclick="SaveEditedCalendarAsync">Zapisz zmiany w wideokonferencji</button>
+                            <div class="col-12"><br /></div>
+                            <button class="btn2" @onclick="CancelEditingCalendar">Anuluj zmiany w wideokonferencji</button>
+                        </div>
+                    }
+                    <div class="col-12"><br /></div>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="col-4 rightDay m-0 p-0 stickyImage">
+                    <img id="photo" src="/Photos/Task1.png" asp-append-version="true" class="col-10"/>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+
+
+
+
+        @if (calendarList.Count == 0)
+        {
+            <div class="col-7 leftDay m-0 p-0">
+                <div class="col-12"><br /></div>
+                <div class="col-12"><br /></div>
+                <div class="col-12"><br /></div>
+                <div class="col-12"><br /></div>
+                <div class="col-12"><br /></div>
+                <div class="col-12"><br /></div>
+                <div class="col-12"><br /></div>
+                <div class="centerDay fontDayHeader">
+                    <label>BRAK ZAPLANOWANYCH TELEKONFERENCJI</label>
+                </div>
+            </div>
+        }
+        else
+        {
+            @foreach (var calendar in calendarList)
+            {
+
+
+                <div class="col-7 leftDay m-0 p-0">
+
+
+                    <div class="col-12 borderDayWhite leftSide fontDay">
+                        <label>Dzień tygodnia:</label>
+                        <label>@date.GetDayOfWeekInPolish()</label>
+                    </div>
+
+                    <div class="col-12"><br /></div>
+
+                    <div class="col-12 fontDay">
+                        <label>ZAPLANOWANE WYDARZENIA:</label>
+                    </div>
+
+                    <div class="col-12 borderEvents">
+                        <div class="col-3 inlineBlock fontDay">
+                            <label class="fontDay">Planowana godzina rozpoczęcia:</label>
+                            <input class="fontDay centerDay" type="text" disabled readonly @bind-value="calendar.TimeStart" />
+                        </div>
+                        <div class="col-3 inlineBlock fontDay">
+                            <label class="fontDay">Planowana godzina zakończenia:</label>
+                            <input class="fontDay centerDay" type="text" disabled readonly @bind-value="calendar.TimeEnd" />
+                        </div>
+                        <div class="col-4 inlineBlock fontDay">
+                            <label>Rodzaj wideokonferencji:</label>
+                            <input class="fontDay centerDay" type="text" disabled readonly @bind-value="calendar.TypeOfConference" />
+                        </div>
+                    </div>
+
+                    <div class="col-12"><br /></div>
+                    <div class="col-12 inlineBlock fontDay">
+                        <label class="col-4 leftSide">Kogo dotyczy:</label>
+                        <input class="col-7 fontDay centerDay" type="text" disabled readonly @bind-value="calendar.WhoIsConcern" />
+                    </div>
+
+                    <div class="col-12"><br /></div>
+                    <div class="col-12 leftSide fontDay">
+                        <label>Dodatkowe informacje:</label>
+                    </div>
+
+                    <div class="col-12 fontDay">
+                        <textarea class="col-12 textDay borderDay fontDay centerDay" readonly disabled @bind="calendar.OtherInformation"></textarea>
+                    </div>
+
+                    @if (calendar.Url != "")
+                    {
+                        <div class="col-12"><br /></div>
+                        <div class="col-12">
+                            <a class="fontDayLink" href="@calendar.Url" target="_blank">Zeskanowany dokument</a>
+                        </div>
+                    }
+
+
+
+                     <AuthorizeView Roles="ADMIN">
+                        <Authorized>
+                            <div class="col-12"><br /></div>
+                            <div class="inlineBlock">
+                                <button class="btn2" @onclick="@(()=>EditConferenceAsync(calendar.Id))">Edytuj Event</button>
+                                <button class="btn2" @onclick="@(()=>DeleteConferenceAsync(calendar.Id))">Usuń Event</button>
+                            </div>
+                        </Authorized>
+                    </AuthorizeView>
+
+
+                    <div class="col-12"><br /></div>
+                    <div class="col-12"><hr class="line col-12" /></div>
+                    <div class="col-12"><br /></div>
+
+
+                </div>
+
+
+            }
+        }
+
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@code
+{
+    [Parameter]
+    public string selectedDate { get; set; }
+
+    string sMessage = "";
+    Date date;
+
+    List<CalendarViewModel> calendarList = new List<CalendarViewModel>();
+    CalendarViewModel calendar = new CalendarViewModel();
+    int iIdOfCalendarEvent = -1;
+
+    DateTime StartTime { get; set; }
+    DateTime EndTime { get; set; }
+    string TypeOfConference { get; set; } = "";
+    string WhoIsConcern { get; set; } = "";
+    string OtherInformation { get; set; }
+
+    string MessageStartTime { get; set; } = "";
+    string MessageEndTime { get; set; } = "";
+    string MessageCorectTime { get; set; } = "";
+    string MessageWhoIsConcern { get; set; } = "";
+    string MessageTypeOfConference { get; set; } = "";
+    bool StartChecking { get; set; } = false;
+
+    bool bEditCalendar { get; set; } = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        date = new Date(DateTime.Parse(selectedDate));
+        calendarList = await calendarServices.GetCalendarsByDayAsync(DateTime.Parse(selectedDate));//GetAllCalendars().OrderBy(x => x.Year).ThenBy(x => x.Month).ThenBy(x => x.Day).ThenBy(x => x.TimeStart).ToList();
+    }
+
+    void GoMonth()
+    {
+        navigationManager.NavigateTo("/", true);
+    }
+
+    void GoWeek()
+    {
+        DateTime selectedDate = new DateTime(Convert.ToInt32(date.Year), date.Month, Convert.ToInt32(date.Day), 0, 0, 0);
+        navigationManager.NavigateTo($"/week/{selectedDate.Date.ToShortDateString()}");
+    }
+
+    void GoDay()
+    {
+        navigationManager.NavigateTo("/day", true);
+    }
+
+    async Task UploadAsync()
+    {
+        fileUpload.IsAnyFileWaitToUpload();
+        if (await fileUpload.UploadFileAsync()) sMessage = "Plik na serwerze.";
+        else sMessage = "Coś poszło nie tak.";
+    }
+
+    void ConferenceTypeSelection(ChangeEventArgs args)
+    {
+        TypeOfConference = args.Value.ToString();
+    }
+
+    async Task PreviousDayAsync()
+    {
+        selectedDate = date.GoToPreviousDay().ToShortDateString();
+        navigationManager.NavigateTo($"/day/{selectedDate}");
+        await OnInitializedAsync();
+    }
+
+    async Task NextDayAsync()
+    {
+        selectedDate = date.GoToNextDay().ToShortDateString();
+        navigationManager.NavigateTo($"/day/{selectedDate}");
+        await OnInitializedAsync();
+    }
+
+    async Task SaveConferenceAsync()
+    {
+        StartChecking = true;
+        if (CheckThatAllFieldIsNotEmpty())
+        {
+            StartChecking = false;
+
+            string startHour = StartTime.Hour.ToString();
+            string startMinutes = StartTime.Minute.ToString();
+            string endHour = EndTime.Hour.ToString();
+            string endMinutes = EndTime.Minute.ToString();
+            string finalStartHour = "";
+            string finalStartMinutes = "";
+            string finalEndHour = "";
+            string finalEndMinutes = "";
+            if (startHour.Length == 1) finalStartHour = "0" + startHour;
+            else finalStartHour = startHour;
+            if (startMinutes.Length == 1) finalStartMinutes = "0" + startMinutes;
+            else finalStartMinutes = startMinutes;
+            if (endHour.Length == 1) finalEndHour = "0" + endHour;
+            else finalEndHour = endHour;
+            if (endMinutes.Length == 1) finalEndMinutes = "0" + endMinutes;
+            else finalEndMinutes = endMinutes;
+
+            calendar.Day = date.Day;
+            calendar.Month = date.Month;
+            calendar.Year = date.Year;
+            calendar.TimeStart = finalStartHour + ":" + finalStartMinutes;
+            calendar.TimeEnd = finalEndHour + ":" + finalEndMinutes;
+            calendar.TypeOfConference = TypeOfConference;
+            calendar.WhoIsConcern = WhoIsConcern;
+            calendar.OtherInformation = OtherInformation;
+            calendar.Url = fileUpload.GetURLToFile();
+            await calendarServices.SaveCalendarAsync(calendar);
+
+            StartTime = new DateTime(1, 1, 1, 00, 00, 00);
+            EndTime = new DateTime(1, 1, 1, 00, 00, 00);
+            TypeOfConference = "";
+            WhoIsConcern = "";
+            OtherInformation = "";
+
+            sMessage = "";
+
+            DateTime selectedDate = new DateTime(Convert.ToInt32(date.Year), date.Month, Convert.ToInt32(date.Day), 0, 0, 0);
+            //navigationManager.NavigateTo($"/day/{selectedDate.Date.ToShortDateString()}");
+            await OnInitializedAsync();
+        }
+    }
+
+    //my own validation
+    bool CheckThatAllFieldIsNotEmpty()
+    {
+        if (CheckStartTime() == true && CheckEndTime() == true && CheckWhoIsConcern() == true && CheckTypeOfConference()==true && CheckCorectTime()==true) return true;
+        else return false;
+    }
+
+    bool CheckStartTime()
+    {
+        if (StartTime.Hour.ToString() == "0" && StartTime.Minute.ToString() == "0")
+        {
+            MessageStartTime = "Nie wybrano godziny rozpoczęcia.";
+            return false;
+        }
+        else  return true;
+    }
+
+    bool CheckEndTime()
+    {
+        if (EndTime.Hour.ToString() == "0" && EndTime.Minute.ToString() == "0")
+        {
+            MessageEndTime = "Nie wybrano godziny zakończenia.";
+            return false;
+        }
+        else return true;
+    }
+
+    bool CheckCorectTime()
+    {
+        if (EndTime <= StartTime)
+        {
+            MessageCorectTime = "Godzina zakończenia nie może być wcześniejsza od godziny rozpoczęcia.";
+            return false;
+        }
+        else return true;
+    }
+
+    bool CheckWhoIsConcern()
+    {
+        if (WhoIsConcern == "")
+        {
+            MessageWhoIsConcern = "Nie wypełniono pola kogo dotyczy.";
+            return false;
+        }
+        else return true;
+    }
+
+    bool CheckTypeOfConference()
+    {
+        if (TypeOfConference == "")
+        {
+            MessageTypeOfConference = "Nie wybrano rodzaju wideokonferencji.";
+            return false;
+        }
+        else return true;
+    }
+    //end validation
+
+    async Task EditConferenceAsync(int IdConference)
+    {
+        iIdOfCalendarEvent = IdConference;
+        calendar = await calendarServices.GetCalendarByIdAsync(IdConference);
+
+
+        StartTime = new DateTime(Convert.ToInt32(date.Year), date.Month, Convert.ToInt32(date.Day), Convert.ToInt32(calendar.TimeStart.Substring(0, 2)), Convert.ToInt32(calendar.TimeStart.Substring(3, 2)), 0);
+        EndTime = new DateTime(Convert.ToInt32(date.Year), date.Month, Convert.ToInt32(date.Day), Convert.ToInt32(calendar.TimeEnd.Substring(0, 2)), Convert.ToInt32(calendar.TimeEnd.Substring(3, 2)), 0);
+        TypeOfConference = calendar.TypeOfConference;
+        WhoIsConcern = calendar.WhoIsConcern;
+        OtherInformation = calendar.OtherInformation;
+        bEditCalendar = true;
+    }
+
+    async Task SaveEditedCalendarAsync()
+    {
+        StartChecking = true;
+        if (CheckThatAllFieldIsNotEmpty())
+        {
+            bEditCalendar = false;
+            StartChecking = false;
+
+            string startHour = StartTime.Hour.ToString();
+            string startMinutes = StartTime.Minute.ToString();
+            string endHour = EndTime.Hour.ToString();
+            string endMinutes = EndTime.Minute.ToString();
+            string finalStartHour = "";
+            string finalStartMinutes = "";
+            string finalEndHour = "";
+            string finalEndMinutes = "";
+            if (startHour.Length == 1) finalStartHour = "0" + startHour;
+            else finalStartHour = startHour;
+            if (startMinutes.Length == 1) finalStartMinutes = "0" + startMinutes;
+            else finalStartMinutes = startMinutes;
+            if (endHour.Length == 1) finalEndHour = "0" + endHour;
+            else finalEndHour = endHour;
+            if (endMinutes.Length == 1) finalEndMinutes = "0" + endMinutes;
+            else finalEndMinutes = endMinutes;
+
+            calendar.Day = date.Day;
+            calendar.Month = date.Month;
+            calendar.Year = date.Year;
+            calendar.TimeStart = finalStartHour + ":" + finalStartMinutes;
+            calendar.TimeEnd = finalEndHour + ":" + finalEndMinutes;
+            calendar.TypeOfConference = TypeOfConference;
+            calendar.WhoIsConcern = WhoIsConcern;
+            calendar.OtherInformation = OtherInformation;
+            calendar.Url = fileUpload.GetURLToFile();
+            await calendarServices.SaveEditedCalendarAsync(iIdOfCalendarEvent, calendar);
+
+            StartTime = new DateTime(1, 1, 1, 00, 00, 00);
+            EndTime = new DateTime(1, 1, 1, 00, 00, 00);
+            TypeOfConference = "";
+            WhoIsConcern = "";
+            OtherInformation = "";
+
+            DateTime selectedDate = new DateTime(Convert.ToInt32(date.Year), date.Month, Convert.ToInt32(date.Day), 0, 0, 0);
+            //navigationManager.NavigateTo($"/day/{selectedDate.Date.ToShortDateString()}");
+            await OnInitializedAsync();
+        }
+    }
+
+    void CancelEditingCalendar()
+    {
+        calendar = null;
+        StartTime = new DateTime(1, 1, 1, 00, 00, 00);
+        EndTime = new DateTime(1, 1, 1, 00, 00, 00);
+        TypeOfConference = "";
+        WhoIsConcern = "";
+        OtherInformation = "";
+        iIdOfCalendarEvent = -1;
+        bEditCalendar = false;
+
+        sMessage = "";
+    }
+
+    async Task DeleteConferenceAsync(int IdConference)
+    {
+        iIdOfCalendarEvent = IdConference;
+        await calendarServices.DeleteCalendarAsync(IdConference);
+        DateTime selectedDate = new DateTime(Convert.ToInt32(date.Year), date.Month, Convert.ToInt32(date.Day), 0, 0, 0);
+        //navigationManager.NavigateTo($"/day/{selectedDate.Date.ToShortDateString()}");
+        await OnInitializedAsync();
+    }
+}

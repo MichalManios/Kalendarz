@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30611.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kalendarz Telekonferencji", "Kalendarz Telekonferencji\Kalendarz Telekonferencji.csproj", "{CCBF586A-5C68-4499-BEB0-CFE99E151DD5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CalendarDatabase", "CalendarDatabase\CalendarDatabase.csproj", "{F7C240F3-029B-49A3-90A7-5E7F0ADE03BD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CCBF586A-5C68-4499-BEB0-CFE99E151DD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCBF586A-5C68-4499-BEB0-CFE99E151DD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCBF586A-5C68-4499-BEB0-CFE99E151DD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCBF586A-5C68-4499-BEB0-CFE99E151DD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7C240F3-029B-49A3-90A7-5E7F0ADE03BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7C240F3-029B-49A3-90A7-5E7F0ADE03BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7C240F3-029B-49A3-90A7-5E7F0ADE03BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7C240F3-029B-49A3-90A7-5E7F0ADE03BD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0EADF36B-9D77-4508-AA88-D02577472EE6}
+	EndGlobalSection
+EndGlobal
